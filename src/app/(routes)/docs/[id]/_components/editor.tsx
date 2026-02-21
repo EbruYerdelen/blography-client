@@ -1,126 +1,121 @@
-"use client";
+'use client'
 
-import "@blocknote/core/fonts/inter.css";
-import { BlockNoteView } from "@blocknote/mantine";
-import "@blocknote/mantine/style.css";
-import { useCreateBlockNote } from "@blocknote/react";
-import { useEffect, useState } from "react";
-import { EditorSkeleton } from "./editor-skeleton";
-import axios from "axios";
-import { formatDate } from "@/helpers/formatDate";
+import '@blocknote/core/fonts/inter.css'
+import { BlockNoteView } from '@blocknote/mantine'
+import '@blocknote/mantine/style.css'
+import { useCreateBlockNote } from '@blocknote/react'
+import { useEffect, useState } from 'react'
+import { EditorSkeleton } from './editor-skeleton'
+import axios from 'axios'
+import { formatDate } from '@/helpers/formatDate'
 
 const Editor = ({
   id,
   document,
 }: {
-  id: string;
+  id: string
   document: {
-    title: string;
+    title: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    content: any;
-    createdAt: string;
-  };
+    content: any
+    createdAt: string
+  }
 }) => {
-  const [isMounted, setIsMounted] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isMounted, setIsMounted] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const getBlogData = async (id: string) => {
     try {
       const res = await axios.get(`/api/post/${id}`, {
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-      });
-        if (res.data.data.content) {
-          return JSON.parse(res.data.data.content);
+      })
+      if (res.data.data.content) {
+        return JSON.parse(res.data.data.content)
       }
-      return null;
-      }
-      catch (error) {
-      console.error("Error fetching blog data:", error);
-      return null;
+      return null
+    } catch (error) {
+      console.error('Error fetching blog data:', error)
+      return null
     }
-  };
+  }
 
   const getSavedContent = () => {
-    if (typeof window !== "undefined") {
-      const savedData = localStorage.getItem(`editor-content-${id}`);
-      return savedData ? JSON.parse(savedData) : null;
+    if (typeof window !== 'undefined') {
+      const savedData = localStorage.getItem(`editor-content-${id}`)
+      return savedData ? JSON.parse(savedData) : null
     }
-    return null;
-  };
+    return null
+  }
   const initialContent = getSavedContent() || [
     {
-      type: "paragraph",
-      content: "Welcome to your Blography editor!",
+      type: 'paragraph',
+      content: 'Welcome to your Blography editor!',
     },
     {
-      type: "paragraph",
+      type: 'paragraph',
     },
-  ];
+  ]
 
   const editor = useCreateBlockNote({
     initialContent: initialContent,
-  });
+  })
 
   const handleSave = async () => {
-    setIsSaving(true);
+    setIsSaving(true)
     try {
-      const contentToSave = editor.document;
-      await axios.put(`${process.env.NEXT_PUBLIC_SERVER_ULR}/post/post/${id}`, {
-        content: JSON.stringify(contentToSave),
-      }, {
-        headers: {
-          "Content-Type": "application/json",
+      const contentToSave = editor.document
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_SERVER_ULR}/post/post/${id}`,
+        {
+          content: JSON.stringify(contentToSave),
         },
-      });
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
     } catch (error) {
-      console.error("Failed to save content:", error);
+      console.error('Failed to save content:', error)
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   useEffect(() => {
-    setIsMounted(true);
+    setIsMounted(true)
     const loadData = async () => {
-      const blogData = await getBlogData(id);
+      const blogData = await getBlogData(id)
       if (blogData) {
-        editor.replaceBlocks(editor.document, blogData);
+        editor.replaceBlocks(editor.document, blogData)
       }
-    };
-    // Load saved content when component mounts
-    loadData();
-  }, [id]);
+    }
+    loadData()
+  }, [id])
 
   if (!isMounted) {
-    return <EditorSkeleton />;
+    return <EditorSkeleton />
   }
 
   return (
-    <div className="px-4 pt-2 pb-4">
-      <div className="flex sm:flex-row flex-col sm:justify-between sm:items-center gap-2 mb-4">
-        <p className="pl-[53px] text-neutral-400 text-sm">
-          {document?.createdAt
-            ? `Created at : ${formatDate(document?.createdAt)}`
-            : ""}
+    <div className='px-4 pt-2 pb-4'>
+      <div className='flex sm:flex-row flex-col sm:justify-between sm:items-center gap-2 mb-4'>
+        <p className='pl-13.25 text-neutral-400 text-sm'>
+          {document?.createdAt ? `Created at : ${formatDate(document?.createdAt)}` : ''}
         </p>
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-[rgb(14,14,14)] sm:bg-[rgb(7,7,7)] hover:bg-[rgb(36,36,36)] active:bg-[rgb(50,50,50)] disabled:bg-[rgb(60,60,60)] shadow-md hover:shadow-lg active:shadow-sm ml-[69px] sm:ml-0 px-4 py-2 rounded-md w-36 sm:w-auto text-white transition-all translate-y-[-40px] duration-200 disabled:cursor-not-allowed"
+          className='bg-[rgb(14,14,14)] sm:bg-[rgb(7,7,7)] hover:bg-[rgb(36,36,36)] active:bg-[rgb(50,50,50)] disabled:bg-[rgb(60,60,60)] shadow-md hover:shadow-lg active:shadow-sm ml-17.25 sm:ml-0 px-4 py-2 rounded-md w-36 sm:w-auto text-white transition-all -translate-y-10 duration-200 disabled:cursor-not-allowed'
         >
-          {isSaving ? "Saving..." : "Save Changes"}
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
-      <BlockNoteView
-        editor={editor}
-        className="editor-container"
-        theme="dark"
-      />
+      <BlockNoteView editor={editor} className='editor-container' theme='dark' />
     </div>
-  );
-};
+  )
+}
 
-export default Editor;
-
+export default Editor
